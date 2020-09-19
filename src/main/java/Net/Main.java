@@ -40,9 +40,3 @@ public class Main {
         return null;
     }
 }
-
-//        String message = "That's a message #" + 4 + " from " + new Pair<InetAddress, Integer>(readTheGroupIP(System.in), 1337).toString();
-//        try {
-//            System.out.println(CopyFinder.parseMessage(message));
-//        }
-//        catch (UnknownHostException exc) {}
