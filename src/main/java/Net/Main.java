@@ -16,8 +16,8 @@ public class Main {
     public static Pair<InetAddress, Integer> readTheGroupIP(InputStream inputStream) {
         Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8);
         int port;
-        System.out.println("Please, enter IP address of the group and port of your process. " +
-                "You can choose it from 224.0.0.0 to 239.255.255.255");
+        System.out.println("Please, enter multicast IP address of the group and port of your process. " +
+                "You can choose IPv4 address from 224.0.0.0 to 239.255.255.255 or try IPv6 one.");
         for (int it = 0; it < 5; ++it) {
             try {
                 groupAddress = InetAddress.getByName(scanner.next());
