@@ -6,7 +6,7 @@ import java.net.*;
 import java.io.InputStream;
 
 public class Main {
-    protected static InetAddress groupAddress = null;
+    protected static InetAddress groupAddress;
 
     public static void main(String[] args) {
         CopyFinder copyFinder = new CopyFinder(readTheGroupIP(System.in));
