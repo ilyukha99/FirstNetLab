@@ -17,14 +17,13 @@ public class Pair<T, U> {
         return second;
     }
 
-    @SuppressWarnings("unchecked")
     public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
 
         if (other instanceof Pair) {
-            Pair<T, U> tmp = (Pair<T, U>)other;
+            Pair<?, ?> tmp = (Pair<?, ?>)other;
             return this.first.equals(tmp.first) && this.second.equals(tmp.second);
         }
 

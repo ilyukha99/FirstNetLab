@@ -71,14 +71,10 @@ public class CopyFinder implements Runnable {
         while (enumeration.hasMoreElements()) {
             NetworkInterface inter = enumeration.nextElement();
 
-            if (inter.supportsMulticast() && !inter.isLoopback()) {
-                try {
-                    new MulticastSocket(port).joinGroup(new InetSocketAddress(groupAddress, port), inter);
+            if (inter.supportsMulticast() && !inter.isLoopback() && inter.isUp()) {
                     return inter;
                 }
-                catch (IOException exc) {}
             }
-        }
         return null;
     }
 
