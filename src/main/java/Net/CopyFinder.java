@@ -2,8 +2,6 @@ package Net;
 import java.net.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CopyFinder implements Runnable {
     protected InetAddress groupAddress;
@@ -48,7 +46,7 @@ public class CopyFinder implements Runnable {
                     }
                     long lastRcvTime = System.currentTimeMillis();
 
-                    Pair<InetAddress, Integer> curCopy = parseMessage(new String(rcvPacket.getData()));
+                    Pair<InetAddress, Integer> curCopy = new Pair<>(rcvPacket.getAddress(), rcvPacket.getPort());
                     if (activityMap.containsKey(curCopy)) {
                         activityMap.replace(curCopy, activityMap.getOrDefault(curCopy, 0L), lastRcvTime);
                     }
@@ -72,20 +70,14 @@ public class CopyFinder implements Runnable {
             NetworkInterface inter = enumeration.nextElement();
 
             if (inter.supportsMulticast() && !inter.isLoopback() && inter.isUp()) {
+                try {
+                    new MulticastSocket(port).joinGroup(new InetSocketAddress(groupAddress, port), inter);
                     return inter;
                 }
+                catch (IOException exc) {}
             }
+        }
         return null;
-    }
-
-    public static Pair<InetAddress, Integer> parseMessage(String message) throws UnknownHostException {
-        List<String> list  = Stream.of(message.split("[/]"))
-                .filter(s -> s.contains("]"))
-                .flatMap(s -> Stream.of(s.split("[^A-Za-z0-9.:]")))
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toList());
-
-        return new Pair<>(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
     }
 
     public void editActivityMap() { //checking and editing
