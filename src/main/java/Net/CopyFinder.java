@@ -1,7 +1,10 @@
 package Net;
+
 import java.net.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class CopyFinder implements Runnable {
     protected InetAddress groupAddress;
@@ -10,6 +13,7 @@ public class CopyFinder implements Runnable {
     private final Map<Pair<InetAddress, Integer>, Long> activityMap = new PrintableLinkedHashMap<Pair<InetAddress, Integer>, Long>();
     private final int interval = 5000; //initial time interval
     private final int port;
+    private final boolean seeAllMode = false;
 
     public CopyFinder(InetAddress groupAddress, int port) {
         this.groupAddress = groupAddress;
@@ -46,7 +50,8 @@ public class CopyFinder implements Runnable {
                     }
                     long lastRcvTime = System.currentTimeMillis();
 
-                    Pair<InetAddress, Integer> curCopy = new Pair<>(rcvPacket.getAddress(), rcvPacket.getPort());
+                    Pair<InetAddress, Integer> curCopy = seeAllMode ?
+                            new Pair<>(rcvPacket.getAddress(), rcvPacket.getPort()) : parseMessage(message);
                     if (activityMap.containsKey(curCopy)) {
                         activityMap.replace(curCopy, activityMap.getOrDefault(curCopy, 0L), lastRcvTime);
                     }
@@ -62,6 +67,16 @@ public class CopyFinder implements Runnable {
         catch (IOException exc) {
             System.err.println(exc.getMessage());
         }
+    }
+
+    public static Pair<InetAddress, Integer> parseMessage(String message) throws UnknownHostException {
+        List<String> list  = Stream.of(message.split("[/]"))
+                .filter(s -> s.contains("]"))
+                .flatMap(s -> Stream.of(s.split("[^A-Za-z0-9.:]")))
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        return new Pair<>(InetAddress.getByName(list.get(0)), Integer.parseInt(list.get(1)));
     }
 
     public NetworkInterface getLocalNetworkInterface() throws IOException {
@@ -82,11 +97,12 @@ public class CopyFinder implements Runnable {
 
     public void editActivityMap() { //checking and editing
         int TTL = 5 * interval;
-        for (Map.Entry<Pair<InetAddress, Integer>, Long> entry : activityMap.entrySet()) {
-            long curTime = System.currentTimeMillis();
-            if (curTime - entry.getValue() > TTL) {
+        Iterator<Map.Entry<Pair<InetAddress, Integer>, Long>> iterator = activityMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Pair<InetAddress, Integer>, Long> entry = iterator.next();
+            if (System.currentTimeMillis() - entry.getValue() > TTL) {
                 System.out.println("- " + entry.getKey().toString());
-                activityMap.remove(entry.getKey(), entry.getValue());
+                iterator.remove();
             }
         }
     }
