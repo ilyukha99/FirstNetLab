@@ -21,6 +21,10 @@ public class Main {
         for (int it = 0; it < 5; ++it) {
             try {
                 groupAddress = InetAddress.getByName(scanner.next());
+                if (!groupAddress.isMulticastAddress()) {
+                    throw new IllegalArgumentException("Not a multicast address. ");
+                }
+
                 if (scanner.hasNextInt()) {
                     port = scanner.nextInt();
                     System.out.println("Success. Ip is " + groupAddress.getHostAddress() +
@@ -33,7 +37,7 @@ public class Main {
                     System.out.println("Session closed. Try again later.");
                     System.exit(-1);
                 }
-                else System.out.println("Unable to identify the address or port, try again. " +
+                else System.out.println(exc.getMessage() + "Unable to identify the address or port, try again. " +
                         "You have " + (4 - it) + " tries remain.");
             }
         }
