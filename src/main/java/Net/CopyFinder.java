@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class CopyFinder implements Runnable {
     protected InetAddress groupAddress;
-    private final byte[] rcvBuf = new byte[512];
+    private byte[] rcvBuf = new byte[512];
 
     private final PrintableLinkedHashMap<Pair<InetAddress, Integer>, Long> activityMap = new PrintableLinkedHashMap<>();
     private final int interval = 5000; //initial time interval
@@ -46,7 +46,7 @@ public class CopyFinder implements Runnable {
             }));
 
             for (long it = 0;;++it) {
-                String message = "That's a message from " + identifier.toString();
+                String message = "That's a message #" + it + " from " + identifier.toString();
                 DatagramPacket sndPacket = new DatagramPacket(message.getBytes(), message.getBytes().length, groupAddress, port);
                 multiCastSocket.send(sndPacket);
                 long lastSendingTime = System.currentTimeMillis();
@@ -63,6 +63,7 @@ public class CopyFinder implements Runnable {
                     }
                     long lastRcvTime = System.currentTimeMillis();
                     checkPacket(rcvPacket, lastRcvTime);
+                    Arrays.fill(rcvBuf, (byte)0);
                 }
                 editActivityMap();
             }
@@ -76,10 +77,8 @@ public class CopyFinder implements Runnable {
         String message = new String(rcvPacket.getData());
         if (message.startsWith("Disconnected.")) {
             Pair<InetAddress, Integer> copy = new Pair<>(rcvPacket.getAddress(), rcvPacket.getPort());
-            if (rcvPacket.getAddress() != InetAddress.getLocalHost()) {
-                System.out.println("- " + copy.toString());
-            }
             activityMap.remove(copy);
+            System.out.println("- " +  copy.toString());
             return;
         }
 
@@ -111,11 +110,7 @@ public class CopyFinder implements Runnable {
             NetworkInterface inter = enumeration.nextElement();
 
             if (inter.supportsMulticast() && !inter.isLoopback() && inter.isUp()) {
-                try {
-                    new MulticastSocket(port).joinGroup(new InetSocketAddress(groupAddress, port), inter);
                     return inter;
-                }
-                catch (IOException exc) {}
             }
         }
         return null;
