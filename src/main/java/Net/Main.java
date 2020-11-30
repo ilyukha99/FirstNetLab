@@ -29,7 +29,7 @@ public class Main {
                     port = scanner.nextInt();
                     System.out.println("Success. Ip is " + groupAddress.getHostAddress() +
                             ", port is " + port + ". " + "Your host: " + InetAddress.getLocalHost() + ".");
-                    return new Pair<InetAddress, Integer>(groupAddress, port);
+                    return new Pair<>(groupAddress, port);
                 }
                 else throw new IllegalArgumentException("Bad syntax.");
             } catch (UnknownHostException | IllegalArgumentException exc) {
